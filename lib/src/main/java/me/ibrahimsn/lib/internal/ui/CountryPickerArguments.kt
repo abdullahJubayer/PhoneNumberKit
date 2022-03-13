@@ -7,6 +7,7 @@ import kotlinx.android.parcel.Parcelize
 data class CountryPickerArguments(
     val itemLayout: Int,
     val isSearchEnabled: Boolean,
+    val isFullScreen: Boolean,
     val excludedCountries: List<String>,
     val admittedCountries: List<String>,
 ) : Parcelable

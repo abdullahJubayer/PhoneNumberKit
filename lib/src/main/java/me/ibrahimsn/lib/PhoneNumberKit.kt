@@ -28,6 +28,7 @@ import java.util.*
 class PhoneNumberKit private constructor(
     private val context: Context,
     private val isIconEnabled: Boolean,
+    private val isFullScreen: Boolean,
     private val excludedCountries: List<String>,
     private val admittedCountries: List<String>,
 ) {
@@ -206,6 +207,7 @@ class PhoneNumberKit private constructor(
                 CountryPickerArguments(
                     itemLayout,
                     searchEnabled,
+                    isFullScreen,
                     excludedCountries,
                     admittedCountries
                 )
@@ -311,6 +313,7 @@ class PhoneNumberKit private constructor(
     class Builder(private val context: Context) {
 
         private var isIconEnabled: Boolean = true
+        private var isFullScreen: Boolean = true
 
         private var excludedCountries: List<String>? = null
 
@@ -331,10 +334,16 @@ class PhoneNumberKit private constructor(
             return this
         }
 
+        fun setFullScreen(isFullScreen: Boolean): Builder {
+            this.isFullScreen = isFullScreen
+            return this
+        }
+
         fun build(): PhoneNumberKit {
             return PhoneNumberKit(
                 context,
                 isIconEnabled,
+                isFullScreen,
                 excludedCountries.orEmpty(),
                 admittedCountries.orEmpty()
             )
