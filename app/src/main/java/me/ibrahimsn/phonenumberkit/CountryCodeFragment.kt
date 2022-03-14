@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputLayout
 import me.ibrahimsn.lib.PhoneNumberKit
@@ -26,6 +27,7 @@ class CountryCodeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val textView=view.findViewById<TextInputLayout>(R.id.textField)
+        val textView2=view.findViewById<EditText>(R.id.editText2)
 
         if (getActivity() is FragmentContainer){
             activity=getActivity() as FragmentContainer
@@ -37,7 +39,7 @@ class CountryCodeFragment : Fragment() {
             .build()
 
         // To attach an editTextLayout
-        phoneNumberKit.attachToInput(textView, "tr")
+        phoneNumberKit.attachToInputWithEditText(textView2, "tr")
 
         // Setup country code picker optionally
         phoneNumberKit.setupCountryPicker(

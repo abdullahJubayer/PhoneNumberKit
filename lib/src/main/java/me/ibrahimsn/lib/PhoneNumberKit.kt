@@ -43,6 +43,8 @@ class PhoneNumberKit private constructor(
 
     private var input: WeakReference<TextInputLayout> = WeakReference(null)
 
+    private var inputEt: WeakReference<EditText> = WeakReference(null)
+
     private val countriesCache = mutableListOf<Country>()
 
     private var inputValue: CharSequence?
@@ -51,7 +53,15 @@ class PhoneNumberKit private constructor(
             input.get()?.editText?.setText(value)
         }
 
+    private var inputValueEt: CharSequence?
+        get() = inputEt.get()?.text
+        set(value) {
+            inputEt.get()?.setText(value)
+        }
+
     val isValid: Boolean get() = validate(inputValue)
+
+    val isValidEditText: Boolean get() = validate(inputValueEt)
 
     init {
         scope.launch(Dispatchers.IO) {
@@ -147,6 +157,23 @@ class PhoneNumberKit private constructor(
         }
     }
 
+    fun attachToInputWithEditText(
+        inputEt: EditText,
+        countryIso2: String,
+    ) {
+        this.inputEt = WeakReference(inputEt)
+        scope.launch {
+            val country = default {
+                getCountries().findCountry(
+                    countryIso2.trim().lowercase(Locale.ENGLISH)
+                )
+            }
+            if (country != null) {
+                attachToInputWithEditText(inputEt, country)
+            }
+        }
+    }
+
     private fun collectState() = scope.launch {
         state.collect { state ->
             when (state) {
@@ -155,13 +182,21 @@ class PhoneNumberKit private constructor(
                     if (isIconEnabled) {
                         getFlagIcon(state.country.iso2)?.let { icon ->
                             input.get()?.startIconDrawable = icon
+                            inputEt.get()?.setCompoundDrawablesWithIntrinsicBounds(icon,null,null,null)
+                            inputEt.get()?.compoundDrawablePadding=20
                         }
                     }
                     input.get()?.editText?.let { editText ->
                         setupListener(editText, state.pattern)
                     }
+                    inputEt.get()?.let { editText ->
+                        setupListener(editText, state.pattern)
+                    }
                     if (inputValue.isNullOrEmpty()) {
                         inputValue = state.country.code.toString()
+                    }
+                    if (inputValueEt.isNullOrEmpty()) {
+                        inputValueEt = state.country.code.toString()
                     }
                 }
             }
@@ -180,6 +215,10 @@ class PhoneNumberKit private constructor(
         inputValue = ""
     }
 
+    private fun clearInputValueForEditText() {
+        inputValueEt = ""
+    }
+
     private fun attachToInput(
         input: TextInputLayout,
         country: Country,
@@ -188,6 +227,16 @@ class PhoneNumberKit private constructor(
 
         input.isStartIconVisible = isIconEnabled
         input.setStartIconTintList(null)
+
+        collectState()
+        setCountry(country.iso2)
+    }
+
+    private fun attachToInputWithEditText(
+        input: EditText,
+        country: Country,
+    ) {
+        input.inputType = InputType.TYPE_CLASS_PHONE
 
         collectState()
         setCountry(country.iso2)
@@ -214,6 +263,26 @@ class PhoneNumberKit private constructor(
             ).apply {
                 onCountrySelectedListener = { country ->
                     clearInputValue()
+                    setCountry(country)
+                }
+                show(
+                    activity.supportFragmentManager,
+                    CountryPickerBottomSheet.TAG
+                )
+            }
+        }
+        inputEt.get()?.setOnClickListener {
+            CountryPickerBottomSheet.newInstance(
+                CountryPickerArguments(
+                    itemLayout,
+                    searchEnabled,
+                    isFullScreen,
+                    excludedCountries,
+                    admittedCountries
+                )
+            ).apply {
+                onCountrySelectedListener = { country ->
+                    clearInputValueForEditText()
                     setCountry(country)
                 }
                 show(
