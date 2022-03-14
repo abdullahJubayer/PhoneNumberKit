@@ -313,7 +313,7 @@ class PhoneNumberKit private constructor(
     class Builder(private val context: Context) {
 
         private var isIconEnabled: Boolean = true
-        private var isFullScreen: Boolean = true
+        private var isFullScreen: Boolean = false
 
         private var excludedCountries: List<String>? = null
 
